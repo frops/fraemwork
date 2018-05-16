@@ -4,7 +4,7 @@
  * @var string $_route
  */
 
-require_once __DIR__.'/../app/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +12,7 @@ use Symfony\Component\Routing;
 
 $request = Request::createFromGlobals();
 
-$routes = require __DIR__ . '/../app/routes.php';
+$routes = require __DIR__ . '/routes.php';
 
 $context = new Routing\RequestContext();
 $context->fromRequest($request);
