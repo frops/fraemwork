@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\LeapYearController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing;
 
@@ -16,10 +17,16 @@ $routes->add('hello', new Routing\Route('/hello/{name}', [
     }
 ]));
 
+$routes->add('leap_year', new Routing\Route('/is_leap_year/{year}', [
+    'year' => null,
+    '_controller' => [new LeapYearController, 'index']
+]));
+
 $routes->add('bye', new Routing\Route('/bye', [
     '_controller' => 'render_template'
 ]));
 
 $routes->add('main', new Routing\Route('/'));
+
 
 return $routes;
