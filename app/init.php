@@ -22,24 +22,8 @@ $matcher = new Routing\Matcher\UrlMatcher($routes, $context);
 $controllerResolver = new HttpKernel\Controller\ControllerResolver();
 $argumentResolver = new HttpKernel\Controller\ArgumentResolver();
 
-try {
-    $request->attributes->add($matcher->match($request->getPathInfo()));
-
-    $controller = $controllerResolver->getController($request);
-    $arguments = $argumentResolver->getArguments($request, $controller);
-
-    $response = call_user_func_array($controller, $arguments);
-} catch (Routing\Exception\ResourceNotFoundException $exception) {
-    $response = new Response('Not found', 404);
-}
-//catch (Throwable $exception) {
-//    //$response = new Response("An error occurred: " . $exception->getMessage(), 500);
-//    $response = new Response();
-//    $trace = $exception->getTraceAsString();
-//    $trace = str_replace('#', '<br>', $trace);
-//    $response->setContent('<h2 style="color:red;">' . $exception->getMessage() . '</h2><hr><p>' . $trace . '</p>');
-//}
-
+$framework = new \Simplex\Framework($matcher, $controllerResolver, $argumentResolver);
+$response = $framework->handle($request);
 $response->send();
 
 /**
