@@ -3,6 +3,7 @@
         "symfony/http-foundation": "*",
         "symfony/routing":"*",
 	    "symfony/http-kernel":"*",
+	    "symfony/event-dispatcher":"*",
 	    "phpunit/phpunit":"7.1.5"
     },
 	"autoload": {
