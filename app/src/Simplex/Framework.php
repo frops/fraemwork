@@ -7,10 +7,11 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface;
 use Symfony\Component\HttpKernel\Controller\ControllerResolverInterface;
+use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\Routing\Matcher\UrlMatcherInterface;
 use Symfony\Component\Routing\Exception\ResourceNotFoundException;
 
-class Framework
+class Framework implements HttpKernelInterface
 {
     private $dispatcher;
     private $matcher;
@@ -27,9 +28,11 @@ class Framework
 
     /**
      * @param Request $request
+     * @param int $type
+     * @param bool $catch
      * @return Response
      */
-    public function handle(Request $request)
+    public function handle(Request $request, $type = HttpKernelInterface::MASTER_REQUEST, $catch = true)
     {
         $this->matcher->getContext()->fromRequest($request);
 
@@ -43,6 +46,7 @@ class Framework
         } catch (ResourceNotFoundException $exception) {
             $response = new Response("Noy found", 404);
         } catch (\Throwable $exception) {
+            var_dump($exception);
             $response = new Response("System error", 500);
         }
 

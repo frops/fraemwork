@@ -6,6 +6,7 @@
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Simplex\ContentLengthListener;
+use Simplex\Framework;
 use Simplex\GoogleListener;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,7 +16,8 @@ use Symfony\Component\HttpKernel;
 
 $routes = require __DIR__ . '/routes.php';
 
-$request = Request::createFromGlobals();
+//$request = Request::createFromGlobals();
+$request = Request::create(isset($argv[1]) ? $argv[1] : '/is_leap_year/2012');
 
 $context = new Routing\RequestContext();
 $context->fromRequest($request);
@@ -31,8 +33,17 @@ $controllerResolver = new HttpKernel\Controller\ControllerResolver();
 $argumentResolver = new HttpKernel\Controller\ArgumentResolver();
 
 $framework = new \Simplex\Framework($dispatcher, $matcher, $controllerResolver, $argumentResolver);
+
+/** @var Framework $framework */
+$framework = new HttpKernel\HttpCache\HttpCache(
+    $framework,
+    new HttpKernel\HttpCache\Store(__DIR__ . '/cache')
+);
+
 $response = $framework->handle($request);
-$response->send();
+
+echo $response;
+echo "\n";
 
 /**
  * @param $request
