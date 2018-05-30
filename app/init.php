@@ -8,54 +8,32 @@ require_once __DIR__ . '/vendor/autoload.php';
 use Simplex\ContentLengthListener;
 use Simplex\Framework;
 use Simplex\GoogleListener;
+use Simplex\StringResponseListener;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing;
 use Symfony\Component\HttpKernel;
 
+$request = Request::createFromGlobals();
+$requestStack = new RequestStack();
 $routes = require __DIR__ . '/routes.php';
 
-//$request = Request::createFromGlobals();
-$request = Request::create(isset($argv[1]) ? $argv[1] : '/is_leap_year/2012');
-
 $context = new Routing\RequestContext();
-$context->fromRequest($request);
-
-$dispatcher = new EventDispatcher();
-
-$dispatcher->addSubscriber(new GoogleListener());
-$dispatcher->addSubscriber(new ContentLengthListener());
-
 $matcher = new Routing\Matcher\UrlMatcher($routes, $context);
 
 $controllerResolver = new HttpKernel\Controller\ControllerResolver();
 $argumentResolver = new HttpKernel\Controller\ArgumentResolver();
 
-$framework = new \Simplex\Framework($dispatcher, $matcher, $controllerResolver, $argumentResolver);
+$dispatcher = new EventDispatcher();
+$dispatcher->addSubscriber(new HttpKernel\EventListener\RouterListener($matcher, $requestStack));
 
-/** @var Framework $framework */
-$framework = new HttpKernel\HttpCache\HttpCache(
-    $framework,
-    new HttpKernel\HttpCache\Store(__DIR__ . '/cache')
-);
+$dispatcher->addSubscriber(new HttpKernel\EventListener\ExceptionListener('Calendar\Controllers\ErrorController::exception'));
+$dispatcher->addSubscriber(new HttpKernel\EventListener\ResponseListener('utf-8'));
+$dispatcher->addSubscriber(new HttpKernel\EventListener\StreamedResponseListener());
+$dispatcher->addSubscriber(new StringResponseListener());
+
+$framework = new \Simplex\Framework($dispatcher, $controllerResolver, $requestStack, $argumentResolver);
 
 $response = $framework->handle($request);
-
-echo $response;
-echo "\n";
-
-/**
- * @param $request
- * @return Response
- */
-function render_template(Request $request)
-{
-    extract($request->attributes->all(), EXTR_SKIP);
-    ob_start();
-
-    /** @var string $_route */
-    include sprintf(__DIR__ . '/pages/%s.php', $_route);
-
-    return new Response(ob_get_clean());
-}
+$response->send();
